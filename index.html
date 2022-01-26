@@ -42,6 +42,17 @@ function randLower(low, high) {
 function randPower(low, high, power) {
     return low+Math.floor(Math.pow(Math.random(), power) * (high-low))
 }
+
+function lose() {
+    clearTimeout(timer);
+    if (confirm("You lose! Play again?")) location.reload();
+}
+
+function win() {
+    clearTimeout(timer);
+    if (confirm("You win! Play again?")) location.reload();
+}
+
 //Default settings
 let size = 7;
 let difficulty = 1; //0-2
@@ -62,11 +73,7 @@ let values = [];
 let wrongcounter = 0;
 let started = false;
 
-timer = setTimeout(function(){
-    //Lose
-    alert("You lose!!!");
-    location.reload();
-}, time*1000);
+timer = setTimeout(lose, time*1000);
 
 //Fill in grid
 for (row = 0; row < size; row++) {
@@ -108,7 +115,8 @@ while (current[0] < size - 1 || current[1] < size -1) {
 
 var grid = clickableGrid(size,size, function(el,row,col,jump) {
     if (!started) {
-	cells = document.getElementsByTagName("td")
+	started = true;
+        cells = document.getElementsByTagName("td")
         for (i=0;i<cells.length;i++) {
             if (cells[i].getElementsByTagName('img').length == 0) {
                 cells[i].innerHTML = "";
@@ -117,20 +125,10 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
         }
     }
     if (row == size -1 && col == size - 1 ) {
-        if (clickable.delete([row, col].toString())) {
-            //Win
-            clearTimeout(timer);
-            alert("You win!!!");
-            location.reload();
-        }
+        if (clickable.delete([row, col].toString())) win();
         else {
             //Lose
-            if (++wrongcounter >= loseAtWrongs) {
-                //Lose
-                clearTimeout(timer);
-                alert("You lose!!!");
-                location.reload();
-            }
+            if (++wrongcounter >= loseAtWrongs) lose();
         }
     }
     else {
@@ -146,12 +144,7 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
         else {
             //Wrong
             el.className='wrong';
-            if (++wrongcounter >= loseAtWrongs) {
-                //Lose
-                clearTimeout(timer);
-                alert("You lose!!!");
-                location.reload();
-            }
+            if (++wrongcounter >= loseAtWrongs) lose();
         }
     }
 
