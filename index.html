@@ -119,6 +119,7 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
     if (row == size -1 && col == size - 1 ) {
         if (clickable.delete([row, col].toString())) {
             //Win
+            clearTimeout(timer);
             alert("You win!!!");
             location.reload();
         }
@@ -126,6 +127,7 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
             //Lose
             if (++wrongcounter >= loseAtWrongs) {
                 //Lose
+                clearTimeout(timer);
                 alert("You lose!!!");
                 location.reload();
             }
@@ -146,6 +148,7 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
             el.className='wrong';
             if (++wrongcounter >= loseAtWrongs) {
                 //Lose
+                clearTimeout(timer);
                 alert("You lose!!!");
                 location.reload();
             }
