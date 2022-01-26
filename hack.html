@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.grid { margin:1em auto; border-collapse:collapse }
+.grid td {
+    cursor:pointer;
+    width:80px; height:80px;
+    border:10px solid #333;
+    text-align:center;
+    color: white;
+    font-family:sans-serif; 
+    font-size: 32px;
+    background-color: #060;
+}
+.grid td.clicked {
+    background-color: #55ff55;
+}
+.grid td.wrong {
+    background-color: #ff5555;
+}
+@keyframes blinking {
+    0%   {background-color:#5f5;}
+    50%  {background-color:#060;}
+    100% {background-color:#5f5;}
+}
+.grid td.blinking {
+    animation-name: blinking;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}
+</style>
+</head>
+<body style="background-color: black">
+<script>
+function randInt(low, high) {
+    return low+Math.floor(Math.random() * (high-low))
+}
+function randLower(low, high) {
+    return low+Math.floor(Math.random() * Math.random() * (high-low))
+}
+function randPower(low, high, power) {
+    return low+Math.floor(Math.pow(Math.random(), power) * (high-low))
+}
+//Default settings
+let size = 9;
+let difficulty = 1; //0-2
+let loseAtWrongs = 3;
+let time = 15;
+
+//Settings from url
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has("size")) size = urlParams.get("size");
+if (urlParams.has("diff")) difficulty = urlParams.get("diff");
+if (urlParams.has("loseAt")) loseAtWrongs = urlParams.get("loseAt");
+if (urlParams.has("time")) time = urlParams.get("time");
+
+//Variables
+var clickable = new Set();
+var clicked = new Set();
+let values = [];
+let wrongcounter = 0;
+let started = false;
+
+setTimeout(function(){
+    //Lose
+    alert("You lose!!!");
+    location.reload();
+}, time*1000);
+
+//Fill in grid
+for (row = 0; row < size; row++) {
+    r = []
+    for (col = 0; col < size; col++) {
+        r.push(randPower(1,size-2,1))
+    }
+    values.push(r);
+}
+
+// Generate path
+leftStart = randInt(1,size);
+topStart = randInt(1,size);
+clickable.add([leftStart,0].toString());
+clickable.add([0,topStart].toString());
+
+if (Math.random() < 0.5) {
+    start = [leftStart,0];
+}
+else {
+    start = [0,topStart];
+}
+current = start;
+while (current[0] < size - 1 || current[1] < size -1) {
+    if ((Math.random() < 0.5 && current[0] < size - 1) || current[1] >= size - 1) {
+        jump = randPower(1, size - 1 - current[0],difficulty);
+	values[current[0]][current[1]] = jump;
+        current[0] += jump;
+    }
+    else {
+        jump = randPower(1, size - 1 - current[1],difficulty);
+	values[current[0]][current[1]] = jump;
+        current[1] += jump;
+    }
+}
+
+
+
+
+var grid = clickableGrid(size,size, function(el,row,col,jump) {
+    if (!started) {
+	cells = document.getElementsByTagName("td")
+        for (i=0;i<cells.length;i++) {
+            if (cells[i].getElementsByTagName('img').length == 0) {
+                cells[i].innerHTML = "";
+                cells[i].className="";
+            }
+        }
+    }
+    if (row == size -1 && col == size - 1 ) {
+        if (clickable.delete([row, col].toString())) {
+            //Win
+            alert("You win!!!");
+            location.reload();
+        }
+        else {
+            //Lose
+            alert("You lose!!!");
+            location.reload();
+        }
+    }
+    else {
+        
+        if (clickable.delete([row, col].toString())) {
+            clicked.add([row,col].toString());
+            el.className='clicked';
+            clickable.add([row-jump,col].toString())
+            clickable.add([row+jump,col].toString())
+            clickable.add([row,col-jump].toString())
+            clickable.add([row,col+jump].toString())
+        }
+        else {
+            //Wrong
+            el.className='wrong';
+            if (++wrongcounter >= loseAtWrongs) {
+                //Lose
+                alert("You lose!!!");
+                location.reload();
+            }
+        }
+    }
+
+});
+
+document.body.appendChild(grid);
+     
+function clickableGrid( rows, cols, callback) {
+    var grid = document.createElement('table');
+    grid.className = 'grid';
+    for (var r=0;r<rows;++r){
+        var tr = grid.appendChild(document.createElement('tr'));
+        for (var c=0;c<cols;++c) {
+            var cell = tr.appendChild(document.createElement('td'));
+            jump = values[r][c]
+            if (r == 0 && c == 0) {
+                //var img = cell.appendChild(document.createElement('img'));
+                //img.src = "ethernetSmall.png";
+                //img.style = "style='width:50px;height:50px;'";
+                cell.innerHTML = '<img src="ethernet.png" style="width:50px;height:50px;">';
+                cell.className='clicked';
+            }
+            else if (r == size - 1 && c == size - 1) {
+                cell.innerHTML = '<img src="network.png" style="width:50px;height:50px;">';
+                cell.className='clicked';
+                cell.addEventListener('click',(function(el,r,c,jump) {
+                    return function(){
+                        callback(el,r,c,jump);
+                    }
+                })(cell,r,c,jump),false);
+            }
+            else {
+                if ((r == leftStart && c == 0) || (r == 0 && c == topStart)) {
+                    cell.className='blinking';
+                }
+
+                cell.innerHTML = jump;
+                cell.addEventListener('click',(function(el,r,c,jump) {
+                    return function(){
+                        callback(el,r,c,jump);
+                    }
+                })(cell,r,c,jump),false);
+            }
+        }
+    }
+    return grid;
+}
+</script>
+</body>
+</html>
