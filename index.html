@@ -43,7 +43,7 @@ function randPower(low, high, power) {
     return low+Math.floor(Math.pow(Math.random(), power) * (high-low))
 }
 //Default settings
-let size = 9;
+let size = 7;
 let difficulty = 1; //0-2
 let loseAtWrongs = 3;
 let time = 15;
@@ -62,7 +62,7 @@ let values = [];
 let wrongcounter = 0;
 let started = false;
 
-setTimeout(function(){
+timer = setTimeout(function(){
     //Lose
     alert("You lose!!!");
     location.reload();
@@ -124,8 +124,11 @@ var grid = clickableGrid(size,size, function(el,row,col,jump) {
         }
         else {
             //Lose
-            alert("You lose!!!");
-            location.reload();
+            if (++wrongcounter >= loseAtWrongs) {
+                //Lose
+                alert("You lose!!!");
+                location.reload();
+            }
         }
     }
     else {
